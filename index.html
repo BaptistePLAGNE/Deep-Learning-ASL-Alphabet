@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        img {
+            max-width: 300px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Classification with TensorFlow.js</h1>
+    <p>Upload an image to classify:</p>
+    <input type="file" id="imageInput" accept="image/*">
+    <br>
+    <img id="previewImage" alt="Image preview will appear here" />
+    <p id="file-name"></p>
+    <p id="predictions"></p>
+
+    <script>
+        // Charger l'image sélectionnée par l'utilisateur
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('previewImage');
+        const predictionsParagraph = document.getElementById('predictions');
+
+        let model;
+
+        // Charger le modèle au démarrage
+        tf.loadGraphModel('./models/tfjs_model/model.json').then(loadedModel => {
+            model = loadedModel;
+            console.log('Custom model loaded successfully');
+        });
+
+        // Gérer le chargement de l'image
+        imageInput.addEventListener('change', event => {
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                const fileNameElement = document.getElementById('file-name');
+                fileNameElement.textContent = file.name;    
+                reader.onload = () => {
+                    previewImage.src = reader.result;
+                    previewImage.onload = () => classifyImage(previewImage);
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Classifier l'image
+        async function classifyImage(imgElement) {
+            if (!model) {
+                predictionsParagraph.innerText = "Model is not loaded yet. Please wait...";
+                return;
+            }
+
+            predictionsParagraph.innerText = "Classifying...";
+
+            // Convertir l'image en Tensor
+            const tensor = tf.browser.fromPixels(imgElement)
+                                    .resizeBilinear([128, 128])  // Redimensionner à 128x128 (taille demandé)
+                                    .toFloat()  // Convertir en float
+                                    .div(tf.scalar(255));  // Normaliser les pixels entre 0 et 1
+
+            // Normalisation avec les moyennes et écarts-types de MobileNet
+            const normalizedTensor = tensor.sub(tf.tensor([0.485, 0.456, 0.406]))  // Moyennes
+                                          .div(tf.tensor([0.229, 0.224, 0.225]));  // Écarts-types
+
+            // Ajouter une dimension pour le batch
+            const batchedTensor = normalizedTensor.expandDims(0);
+
+            // Effectuer la prédiction avec le modèle
+            const predictions = await model.predict(batchedTensor);
+
+            // Convertir le Tensor des prédictions en tableau de valeurs
+            const predictionData = await predictions.data();
+
+            // Trouver les classes et leur probabilité associée
+            displayPredictions(predictionData);
+        }
+
+        // Liste des noms des classes personnalisées
+        const classNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+        function applySoftmax(predictions) {
+            const expValues = predictions.map(x => Math.exp(x)); // Exponentielle de chaque valeur
+            const sumExp = expValues.reduce((sum, x) => sum + x, 0); // Somme des exponentielles
+            return expValues.map(x => x / sumExp); // Division pour normaliser
+        }
+
+        // Afficher les prédictions
+        function displayPredictions(predictionData) {
+            predictionsParagraph.innerHTML = "<strong>Predictions:</strong><br>";
+
+            predictionData_soft_max = applySoftmax(predictionData)
+            // Trier les prédictions par probabilité décroissante
+            const sortedPredictions = Array.from(predictionData_soft_max)
+                .map((probability, index) => ({ classIndex: index, probability }))
+                .sort((a, b) => b.probability - a.probability);
+            
+            // Afficher les 5 classes les plus probables (ou plus si vous le souhaitez)
+            sortedPredictions.slice(0, 9).forEach(prediction => {
+                const className = classNames[prediction.classIndex] || `Class ${prediction.classIndex}`;
+                predictionsParagraph.innerHTML += `${className}: ${(
+                    prediction.probability * 100  // Empêcher les valeurs négatives
+                ).toFixed(2)}%<br>`;
+            });
+        }
+    </script>
+</body>
+</html>

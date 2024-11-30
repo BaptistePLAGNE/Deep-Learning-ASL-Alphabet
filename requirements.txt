@@ -1,0 +1,11 @@
+onnx
+keras<3.0.0
+tensorflow==2.15.0
+tensorflow-addons
+onnx_tf
+torch
+torchvision
+ipykernel
+tensorflow_probability==0.23.0
+tf_keras
+tensorflowjs
