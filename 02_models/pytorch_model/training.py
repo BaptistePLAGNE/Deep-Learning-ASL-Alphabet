@@ -19,7 +19,7 @@ np.random.seed(SEED)
 torch.use_deterministic_algorithms(True)
 
 device       = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-total_epochs = 50
+total_epochs = 100
 batch_size   = 16
 
 if __name__ == "__main__":
@@ -39,9 +39,9 @@ if __name__ == "__main__":
     model        = ExtendedSimpleCNN2D(3, 8).to(device)
     optimizer    = torch.optim.Adam(model.parameters(), lr = 0.0001)
 
-    validation_dataset = SimpleTorchDataset('./data/val')
-    training_dataset   = SimpleTorchDataset('./data/train')
-    testing_dataset    = SimpleTorchDataset('./data/test')
+    validation_dataset = SimpleTorchDataset('./01_data/val')
+    training_dataset   = SimpleTorchDataset('./01_data/train')
+    testing_dataset    = SimpleTorchDataset('./01_data/test')
 
     validation_datasetloader = DataLoader(validation_dataset, batch_size = batch_size, shuffle = True)
     training_datasetloader   = DataLoader(training_dataset,   batch_size = batch_size, shuffle = True)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         model.eval()    # set the model to evaluation
         metrics.reset() # reset the metrics
 
-        for (image, label) in tqdm(validation_datasetloader, desc = "Testing  :"):
+        for (image, label) in tqdm(validation_datasetloader, desc = "Validation  :"):
             
             image = image.to(device)
             label = label.to(device)

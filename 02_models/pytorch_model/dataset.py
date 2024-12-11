@@ -16,11 +16,11 @@ class SimpleTorchDataset(torch.utils.data.Dataset):
         self.__add_dataset__("A",     [1, 0, 0, 0, 0, 0, 0, 0])
         self.__add_dataset__("B",     [0, 1, 0, 0, 0, 0, 0, 0])
         self.__add_dataset__("C",     [0, 0, 1, 0, 0, 0, 0, 0])
-        self.__add_dataset__("D",     [0, 0, 0, 1, 0, 0, 0, 0])
-        self.__add_dataset__("E",     [0, 0, 0, 0, 1, 0, 0, 0])
-        self.__add_dataset__("F",     [0, 0, 0, 0, 0, 1, 0, 0])
-        self.__add_dataset__("G",     [0, 0, 0, 0, 0, 0, 1, 0])
-        self.__add_dataset__("H",     [0, 0, 0, 0, 0, 0, 0, 1])
+        self.__add_dataset__("H",     [0, 0, 0, 1, 0, 0, 0, 0])
+        self.__add_dataset__("L",     [0, 0, 0, 0, 1, 0, 0, 0])
+        self.__add_dataset__("R",     [0, 0, 0, 0, 0, 1, 0, 0])
+        self.__add_dataset__("W",     [0, 0, 0, 0, 0, 0, 1, 0])
+        self.__add_dataset__("Y",     [0, 0, 0, 0, 0, 0, 0, 1])
         
         post_processing = [
             transforms.CenterCrop((128, 128)),
@@ -29,8 +29,14 @@ class SimpleTorchDataset(torch.utils.data.Dataset):
         ]
 
         self.augmentation = transforms.Compose(
-            [transforms.Resize((177, 177))] +   # List Concatination
-            aug                             +   # List Concatination
+            [transforms.Resize((135, 135))] +   # List Concatination
+            [
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomRotation(30),
+                transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
+                transforms.RandomResizedCrop(135),
+                transforms.RandomAffine(10, shear=10)
+            ]                              +   # List Concatination
             post_processing
         )
     

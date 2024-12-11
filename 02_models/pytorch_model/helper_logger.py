@@ -41,7 +41,7 @@ class DataLogger():
 
 
     def __setup_dir__(self, experiment_name : str, force = False) -> str:
-        base_dir = '../runs'
+        base_dir = './03_runs'
         base_dir = os.path.abspath(base_dir)
         os.makedirs(base_dir, exist_ok = True)
 
@@ -106,27 +106,59 @@ class DataLogger():
         data = [x.__dict__ for x in self.logs]
         return pd.DataFrame(data)
     
-    def __plot_loss__(self) -> None:
+    def __plot_loss__linear(self) -> None:
         training_loss   = [i.training_loss   for i in self.logs]
         validation_loss = [i.validation_loss for i in self.logs]
         epoch           = [i.epoch           for i in self.logs]
         
-        fpath = os.path.join(self.root_dir, "loss.png")
+        fpath = os.path.join(self.root_dir, "loss_linear.png")
+        plt.plot(epoch, training_loss,   label = 'Training Loss')
+        plt.plot(epoch, validation_loss, label = 'Validation Loss')
+        plt.title('Loss')
+        plt.legend()
+        plt.savefig(fpath)
+        plt.yscale('linear')
+        plt.clf()
+
+    def __plot_loss__log(self) -> None:
+        training_loss   = [i.training_loss   for i in self.logs]
+        validation_loss = [i.validation_loss for i in self.logs]
+        epoch           = [i.epoch           for i in self.logs]
+        
+        fpath = os.path.join(self.root_dir, "loss_log.png")
         plt.plot(epoch, training_loss,   label = 'Training Loss')
         plt.plot(epoch, validation_loss, label = 'Validation Loss')
         plt.title('Loss')
         plt.yscale('log')
         plt.legend()
         plt.savefig(fpath)
-        plt.yscale('linear')
         plt.clf()
-
-    def __plot_accuracy__(self) -> None:
+        
+    def __plot_accuracy__linear(self) -> None:
         training_acc   = [i.training_accuracy   for i in self.logs]
         validation_acc = [i.validation_accuracy for i in self.logs]
         epoch          = [i.epoch               for i in self.logs]
         
-        fpath = os.path.join(self.root_dir, "accuracy.png")
+        fpath = os.path.join(self.root_dir, "accuracy_linear.png")
+        plt.plot(epoch, training_acc,   label = 'Training Accuracy')
+        plt.plot(epoch, validation_acc, label = 'Validation Accuracy')
+        plt.plot(
+            [self.current_best_epoch, self.current_best_epoch],
+            plt.ylim(), 
+            label = f'Best : {self.current_best_accuracy:.2f}'
+        )
+        plt.title('Accuracy')
+        plt.legend()
+        plt.savefig(fpath)
+        plt.yscale('linear')
+        plt.clf()
+    
+    def __plot_accuracy__log(self) -> None:
+        training_acc   = [i.training_accuracy   for i in self.logs]
+        validation_acc = [i.validation_accuracy for i in self.logs]
+        epoch          = [i.epoch               for i in self.logs]
+        
+        fpath = os.path.join(self.root_dir, "accuracy_log.png")
         plt.plot(epoch, training_acc,   label = 'Training Accuracy')
         plt.plot(epoch, validation_acc, label = 'Validation Accuracy')
         plt.plot(
@@ -138,12 +170,13 @@ class DataLogger():
         plt.yscale('log')
         plt.legend()
         plt.savefig(fpath)
-        plt.yscale('linear')
         plt.clf()
 
     def save(self) -> None:
-        self.__plot_loss__()
-        self.__plot_accuracy__()
+        self.__plot_loss__linear()
+        self.__plot_loss__log()
+        self.__plot_accuracy__linear()
+        self.__plot_accuracy__log()
 
         dfx = self.__to_df__()
         dfx.to_csv( 
