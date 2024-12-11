@@ -36,7 +36,7 @@
         let model;
 
         // Charger le modèle au démarrage
-        tf.loadGraphModel('./02_models/tfjs_model/model.json').then(loadedModel => {
+        tf.loadGraphModel('./02_models/tfjs_model/tfjs_model/model.json').then(loadedModel => {
             model = loadedModel;
             console.log('Custom model loaded successfully');
         });
@@ -91,7 +91,7 @@
         }
 
         // Liste des noms des classes personnalisées
-        const classNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        const classNames = ['A', 'B', 'C', 'H', 'L', 'R', 'W', 'Z'];
 
         function applySoftmax(predictions) {
             const expValues = predictions.map(x => Math.exp(x)); // Exponentielle de chaque valeur
