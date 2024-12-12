@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = ExtendedSimpleCNN2D(3,8)
 
-state_dictonary = torch.load("./03_runs/class_langage-3/best_checkpoint.pth", map_location = device)
+state_dictonary = torch.load("./03_runs/class_langage-4/best_checkpoint.pth", map_location = device)
 model.load_state_dict(state_dictonary['model_state'])
 model = model.to(device)
 
@@ -35,7 +35,7 @@ preprocess = transforms.Compose([
 ])
 
 # Load and preprocess an image
-image_path = "./01_data/test/R/30.jpg"  # Replace with your image path
+image_path = "./01_data/test/A/10.jpg"  # Replace with your image path
 image = Image.open(image_path).convert("RGB")
 input_tensor = preprocess(image).unsqueeze(0)
 
