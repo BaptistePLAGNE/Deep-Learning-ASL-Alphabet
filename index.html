@@ -70,8 +70,7 @@
             // Convertir l'image en Tensor
             const tensor = tf.browser.fromPixels(imgElement)
                                     .resizeBilinear([128, 128])  // Redimensionner à 128x128 (taille demandé)
-                                    .toFloat()  // Convertir en float
-                                    .div(tf.scalar(255));  // Normaliser les pixels entre 0 et 1
+                                    .toFloat();  // Convertir en float
 
             // Normalisation avec les moyennes et écarts-types de MobileNet
             const normalizedTensor = tensor.sub(tf.tensor([0.485, 0.456, 0.406]))  // Moyennes
