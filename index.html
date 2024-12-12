@@ -58,7 +58,6 @@
             }
         });
 
-        // Classifier l'image
         async function classifyImage(imgElement) {
             if (!model) {
                 predictionsParagraph.innerText = "Model is not loaded yet. Please wait...";
@@ -67,52 +66,44 @@
 
             predictionsParagraph.innerText = "Classifying...";
 
-            // Convertir l'image en Tensor
             const tensor = tf.browser.fromPixels(imgElement)
-                                    .resizeBilinear([128, 128])  // Redimensionner à 128x128 (taille demandé)
-                                    .toFloat();  // Convertir en float
+                                    .resizeBilinear([128, 128])
+                                    .toFloat()
+                                    .div(tf.scalar(255));
 
-            // Normalisation avec les moyennes et écarts-types de MobileNet
-            const normalizedTensor = tensor.sub(tf.tensor([0.485, 0.456, 0.406]))  // Moyennes
-                                          .div(tf.tensor([0.229, 0.224, 0.225]));  // Écarts-types
+            const normalizedTensor = tensor.sub(tf.tensor([0.485, 0.456, 0.406]))
+                                          .div(tf.tensor([0.229, 0.224, 0.225]));
 
-            // Ajouter une dimension pour le batch
             const batchedTensor = normalizedTensor.expandDims(0);
 
-            // Effectuer la prédiction avec le modèle
             const predictions = await model.predict(batchedTensor);
 
-            // Convertir le Tensor des prédictions en tableau de valeurs
             const predictionData = await predictions.data();
 
-            // Trouver les classes et leur probabilité associée
             displayPredictions(predictionData);
         }
 
-        // Liste des noms des classes personnalisées
         const classNames = ['A', 'B', 'C', 'H', 'L', 'R', 'W', 'Y'];
 
         function applySoftmax(predictions) {
-            const expValues = predictions.map(x => Math.exp(x)); // Exponentielle de chaque valeur
-            const sumExp = expValues.reduce((sum, x) => sum + x, 0); // Somme des exponentielles
-            return expValues.map(x => x / sumExp); // Division pour normaliser
+            const expValues = predictions.map(x => Math.exp(x));
+            const sumExp = expValues.reduce((sum, x) => sum + x, 0);
+            return expValues.map(x => x / sumExp);
         }
 
-        // Afficher les prédictions
         function displayPredictions(predictionData) {
             predictionsParagraph.innerHTML = "<strong>Predictions:</strong><br>";
 
             predictionData_soft_max = applySoftmax(predictionData)
-            // Trier les prédictions par probabilité décroissante
+
             const sortedPredictions = Array.from(predictionData_soft_max)
                 .map((probability, index) => ({ classIndex: index, probability }))
                 .sort((a, b) => b.probability - a.probability);
             
-            // Afficher les 5 classes les plus probables (ou plus si vous le souhaitez)
             sortedPredictions.slice(0, 9).forEach(prediction => {
                 const className = classNames[prediction.classIndex] || `Class ${prediction.classIndex}`;
                 predictionsParagraph.innerHTML += `${className}: ${(
-                    prediction.probability * 100  // Empêcher les valeurs négatives
+                    prediction.probability * 100
                 ).toFixed(2)}%<br>`;
             });
         }
