@@ -67,11 +67,17 @@
             predictionsParagraph.innerText = "Classifying...";
 
             const tensor = tf.browser.fromPixels(imgElement)
-                                    .resizeBilinear([128, 128])
-                                    .toFloat()
-                                    .div(tf.scalar(255));
+                                    .resizeBilinear([177, 177])
+                                    .toFloat();
 
-            const normalizedTensor = tensor.sub(tf.tensor([0.485, 0.456, 0.406]))
+            const cropHeight = 128;
+            const cropWidth = 128;
+            const startHeight = Math.floor((tensor.shape[0] - cropHeight) / 2);
+            const startWidth = Math.floor((tensor.shape[1] - cropWidth) / 2);
+                                
+            const croppedTensor = tensor.slice([startHeight, startWidth, 0], [cropHeight, cropWidth, 3]);
+
+            const normalizedTensor = croppedTensor.sub(tf.tensor([0.485, 0.456, 0.406]))
                                           .div(tf.tensor([0.229, 0.224, 0.225]));
 
             const batchedTensor = normalizedTensor.expandDims(0);
